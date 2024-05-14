@@ -65,6 +65,7 @@ build = ["cp38-*", "cp39-*", "cp310-*", "cp311-*"]
 skip = "*musllinux*{i686,aarch64}*"
 manylinux-x86_64-image = "manylinux2014"
 manylinux-i686-image = "manylinux2014"
+musllinux-x86_64-image = "musllinux_1_1"
 
 [[tool.cibuildwheel.overrides]]
 select = "cp3{7,8,9,10}-*"
@@ -82,7 +83,8 @@ before-all = [
   "git clone --depth 1 --branch v1.9.4 https://github.com/lz4/lz4 lz4",
   "cd lz4",
   "make",
-  "make install DESTDIR=/tmp/lz4_install"
+  "make install PREFIX=$LZ4_INSTALL_DIR",
+  "find $LZ4_INSTALL_DIR",
 ]
 before-test = [
   "codesign --remove-signature /Library/Frameworks/Python.framework/Versions/*/bin/python3 || true",

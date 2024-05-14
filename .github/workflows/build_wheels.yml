@@ -105,7 +105,7 @@ jobs:
         run: |
           echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.17.0
+        uses: pypa/cibuildwheel@v2.18.0
         env:
           CIBW_BUILD: "cp3{7..12}-${{ matrix.wheel_type }}"
           CIBW_ARCHS_LINUX: auto aarch64
@@ -143,7 +143,7 @@ jobs:
           tar zxvf dist/*.tar.gz --strip-components=1
       - name: Sets env vars for compilation
         run: |
-          echo "LZ4_INSTALL_DIR=/tmp/lz4_install/usr/local/" >> $GITHUB_ENV
+          echo "LZ4_INSTALL_DIR=/tmp/lz4_install" >> $GITHUB_ENV
           echo "CFLAGS=-arch ${{matrix.arch}}" >> $GITHUB_ENV
       - name: Set x86_64-specific environment variables
         if: matrix.arch == 'x86_64'
@@ -154,17 +154,17 @@ jobs:
         run: |
           echo "MACOSX_DEPLOYMENT_TARGET=11.0" >> $GITHUB_ENV
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.17.0
+        uses: pypa/cibuildwheel@v2.18.0
         env:
           CIBW_BUILD: "cp3{8..12}-*"
           CIBW_PRERELEASE_PYTHONS: True
           CIBW_TEST_EXTRAS: test
           CIBW_TEST_COMMAND: pytest {package}/tests
           CIBW_BUILD_VERBOSITY: 1
-          MACOSX_DEPLOYMENT_TARGET: "10.14"
           CFLAGS: "${{env.CFLAGS}} -I${{env.LZ4_INSTALL_DIR}}/include"
           LDFLAGS: "-L${{env.LZ4_INSTALL_DIR}}/lib -Wl,-rpath,${{env.LZ4_INSTALL_DIR}}/lib"
-          DYLD_LIBRARY_PATH: "${{env.LZ4_INSTALL_DIR}}/lib"
+          PKG_CONFIG_PATH: "${{env.LZ4_INSTALL_DIR}}/lib/pkgconfig"
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: "DYLD_LIBRARY_PATH=${{env.LZ4_INSTALL_DIR}}/lib delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
       - uses: actions/upload-artifact@v4
         with:
           name: macosx_${{ matrix.arch }}-wheels
